@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Одна жизнь в физике</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --bg-color: #1a1a2e;
+            --card-bg: #16213e;
+            --accent: #0f3460;
+            --highlight: #e94560;
+            --text: #e0e0e0;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --danger: #f44336;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--accent);
+        }
+        .header h1 { color: #fff; font-size: 1.8em; margin-bottom: 12px; }
+        .header p { font-size: 1em; margin: 6px 0; opacity: 0.9; }
+        .gender-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+        .gender-male { background-color: #1976d2; color: white; }
+        .gender-female { background-color: #d81b60; color: white; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .stat-box {
+            background-color: var(--accent);
+            padding: 16px 8px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stat-value { font-size: 1.6em; font-weight: 700; color: #fff; margin-bottom: 4px; }
+        .stat-label { font-size: 0.8em; opacity: 0.8; }
+        .event-card {
+            background-color: rgba(255, 255, 255, 0.05);
+            border-left: 4px solid var(--highlight);
+            padding: 24px;
+            border-radius: 10px;
+            margin-bottom: 24px;
+            min-height: 180px;
+        }
+        .event-card h3 { color: #fff; font-size: 1.3em; margin-bottom: 16px; }
+        .question-text { font-size: 1.1em; line-height: 1.6; margin-bottom: 20px; }
+        .choices { display: flex; flex-direction: column; gap: 12px; }
+        .choice-btn {
+            background-color: var(--accent);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            padding: 16px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: left;
+            font-size: 1em;
+            line-height: 1.5;
+            transition: all 0.2s;
+            min-height: 56px;
+        }
+        .choice-btn:hover { background-color: var(--highlight); border-color: var(--highlight); transform: translateX(4px); }
+        .choice-btn:active { transform: scale(0.98); }
+        .choice-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        .focus-choices {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 20px;
+        }
+        .focus-btn {
+            background: linear-gradient(135deg, var(--accent) 0%, rgba(15, 52, 96, 0.8) 100%);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            padding: 20px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1em;
+            text-align: center;
+            min-height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .focus-btn:hover {
+            background: linear-gradient(135deg, var(--highlight) 0%, rgba(233, 69, 96, 0.8) 100%);
+            transform: translateY(-3px);
+        }
+        .focus-btn strong { display: block; margin-bottom: 6px; font-size: 1.1em; }
+        .focus-btn small { font-size: 0.85em; opacity: 0.85; }
+        .log-container {
+            margin-top: 24px;
+            max-height: 300px;
+            overflow-y: auto;
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            padding: 16px;
+            font-size: 0.95em;
+            border: 1px solid var(--accent);
+        }
+        .log-entry { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+        .log-age { color: var(--warning); font-weight: 700; margin-right: 8px; }
+        .log-good { color: var(--success); }
+        .log-bad { color: var(--danger); }
+        .log-focus { color: #4fc3f7; font-weight: 600; }
+        .log-gender { color: #ce93d8; font-style: italic; }
+        .feedback {
+            margin-top: 16px;
+            padding: 16px;
+            border-radius: 10px;
+            font-weight: 600;
+            display: none;
+        }
+        .feedback.correct { background-color: rgba(76, 175, 80, 0.2); color: var(--success); border: 2px solid var(--success); }
+        .feedback.incorrect { background-color: rgba(244, 67, 54, 0.2); color: var(--danger); border: 2px solid var(--danger); }
+        .game-over { text-align: center; padding: 40px 20px; }
+        .game-over h2 { color: #fff; font-size: 1.8em; margin-bottom: 20px; }
+        .game-over p { font-size: 1.1em; margin-bottom: 16px; }
+        .restart-btn {
+            background-color: var(--highlight);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            font-size: 1.2em;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 24px;
+            min-height: 56px;
+            font-weight: 600;
+        }
+        @media (max-width: 768px) {
+            .container { padding: 16px; }
+            .header h1 { font-size: 1.5em; }
+            .stats-grid { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+            .stat-box { padding: 12px 6px; }
+            .stat-value { font-size: 1.4em; }
+            .focus-choices { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 480px) {
+            .container { padding: 12px; }
+            .header h1 { font-size: 1.3em; }
+            .stats-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+            .stat-box { padding: 10px 4px; }
+            .stat-value { font-size: 1.2em; }
+            .stat-label { font-size: 0.7em; }
+            .event-card { padding: 16px; }
+            .choice-btn { padding: 14px 16px; font-size: 0.95em; }
+            .focus-btn { padding: 14px 12px; }
+            .log-container { max-height: 250px; padding: 12px; font-size: 0.85em; }
+            .restart-btn { width: 100%; }
+        }
+        @media (max-width: 360px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🌌 Одна жизнь в физике</h1>
+        <p id="era-display">Эпоха: Загрузка...</p>
+        <p id="role-display">Происхождение: Загрузка...</p>
+        <p id="gender-display"></p>
+    </div>
+    <div class="stats-grid">
+        <div class="stat-box"><div class="stat-value" id="stat-age">15</div><div class="stat-label">🎂 Возраст</div></div>
+        <div class="stat-box"><div class="stat-value" id="stat-health">80</div><div class="stat-label">💪 Здоровье</div></div>
+        <div class="stat-box"><div class="stat-value" id="stat-happiness">70</div><div class="stat-label">😊 Счастье</div></div>
+        <div class="stat-box"><div class="stat-value" id="stat-knowledge">30</div><div class="stat-label">🧠 Знания</div></div>
+        <div class="stat-box"><div class="stat-value" id="stat-relationships">60</div><div class="stat-label">🤝 Отношения</div></div>
+        <div class="stat-box"><div class="stat-value" id="stat-money">40</div><div class="stat-label">💰 Ресурсы</div></div>
+    </div>
+    <div id="game-area">
+        <div class="event-card">
+            <h3 id="event-title">Событие</h3>
+            <p class="question-text" id="event-text">Загрузка...</p>
+            <div id="feedback-area" class="feedback"></div>
+            <div class="choices" id="choices-area"></div>
+        </div>
+    </div>
+    <div class="log-container" id="log-area"></div>
+    <div id="game-over-area" class="game-over" style="display: none;">
+        <h2 id="end-title">Жизнь завершена</h2>
+        <p id="end-reason"></p>
+        <p id="end-summary"></p>
+        <button class="restart-btn" onclick="initGame()">Начать новую жизнь</button>
+    </div>
+</div>
+
+<script>
+const eras = [
+    "Античность и Средневековье (натурфилософия)",
+    "Научная революция (XVI–XVII вв.)",
+    "Эпоха классической физики (XVIII–XIX вв.)",
+    "Квантовая и релятивистская революция (начало XX в.)",
+    "Современная физика (XX–XXI вв.)"
+];
+
+const rolesMale = ["Сын ремесленника", "Студент древнего университета", "Лаборант при академии наук", "Сельский учитель", "Отпрыск обедневшего дворянского рода", "Сын профессора"];
+const rolesFemale = ["Дочь ремесленника, тайно читающая книги", "Дочь профессора, которой не разрешают учиться", "Гувернантка с доступом к библиотеке", "Дочь сельского учителя", "Отпрыск обедневшего дворянского рода", "Жена учёного, работающая в его тени"];
+
+const genderDifficulty = { 0: { female: 0.4, male: 1.0 }, 1: { female: 0.5, male: 1.0 }, 2: { female: 0.6, male: 1.0 }, 3: { female: 0.8, male: 1.0 }, 4: { female: 0.95, male: 1.0 } };
+
+const tasks = [
+    { eras: [0, 1, 2, 3, 4], question: "Что изучает физика?", options: [{ text: "Только движение небесных тел", correct: false, feedback: "Физика гораздо шире." }, { text: "Наиболее общие закономерности явлений природы", correct: true, feedback: "Верно!" }, { text: "Только свойства веществ", correct: false, feedback: "Это лишь часть физики." }] },
+    { eras: [0, 1], question: "Кто доказал, что тяжёлые и лёгкие тела падают с одинаковым ускорением?", options: [{ text: "Птолемей", correct: false, feedback: "Птолемей был астрономом." }, { text: "Галилео Галилей", correct: true, feedback: "Верно! Галилей опроверг Аристотеля." }, { text: "Архимед", correct: false, feedback: "Архимед жил раньше." }] },
+    { eras: [0, 1, 2], question: "Какой простой механизм позволяет поднять тяжёлый груз малой силой?", options: [{ text: "Только блок", correct: false, feedback: "Есть и другие." }, { text: "Рычаг, наклонная плоскость, блок", correct: true, feedback: "Верно! Все простые механизмы дают выигрыш в силе." }, { text: "Только колесо", correct: false, feedback: "Колесо — не механизм для подъёма." }] },
+    { eras: [0, 1, 2, 3, 4], question: "Как зависит путь от времени при свободном падении?", options: [{ text: "Прямо пропорционально (s ~ t)", correct: false, feedback: "Это для равномерного движения." }, { text: "Пропорционально квадрату (s ~ t²)", correct: true, feedback: "Верно! Равноускоренное движение." }, { text: "Обратно пропорционально", correct: false, feedback: "Бессмысленно для падения." }] },
+    { eras: [0, 1, 2], question: "Почему железный корабль плавает?", options: [{ text: "Железо в корабле легче", correct: false, feedback: "Плотность не меняется." }, { text: "Корабль вытесняет объём воды, равный своему весу", correct: true, feedback: "Верно! Закон Архимеда." }, { text: "Вода держит плоские предметы", correct: false, feedback: "Роль играет вытесненный объём." }] },
+    { eras: [0, 1, 2], question: "Орбита планеты по Кеплеру — это:", options: [{ text: "Окружность", correct: false, feedback: "Так считали до Кеплера." }, { text: "Эллипс с Солнцем в фокусе", correct: true, feedback: "Верно! Первый закон Кеплера." }, { text: "Парабола", correct: false, feedback: "Парабола — для незамкнутых траекторий." }] },
+    { eras: [1, 2, 3, 4], question: "Что будет с телом, если сумма всех сил равна нулю?", options: [{ text: "Оно остановится", correct: false, feedback: "Только если было в покое." }, { text: "Сохранит скорость постоянной", correct: true, feedback: "Верно! Первый закон Ньютона." }, { text: "Начнёт ускоряться", correct: false, feedback: "Нужна ненулевая сила." }] },
+    { eras: [1, 2, 3, 4], question: "Тело 2 кг, ускорение 3 м/с². Сила?", options: [{ text: "1.5 Н", correct: false, feedback: "Нужно умножать, а не делить." }, { text: "6 Н", correct: true, feedback: "Верно! F = ma = 6 Н." }, { text: "5 Н", correct: false, feedback: "Нужна формула F = ma." }] },
+    { eras: [1, 2, 3, 4], question: "Два тела одинаковой массы сталкиваются неупруго навстречу с одинаковой скоростью. Что будет?", options: [{ text: "Разлетятся с удвоенной скоростью", correct: false, feedback: "Нарушит закон сохранения импульса." }, { text: "Остановятся", correct: true, feedback: "Верно! Суммарный импульс был нуль." }, { text: "Одно поглотит другое", correct: false, feedback: "В классической механике такого нет." }] },
+    { eras: [1, 2, 3, 4], question: "Камень брошен вверх. В верхней точке:", options: [{ text: "Скорость и ускорение равны нулю", correct: false, feedback: "Ускорение g действует всегда." }, { text: "Скорость = 0, ускорение = g вниз", correct: true, feedback: "Верно!" }, { text: "Скорость максимальна", correct: false, feedback: "Наоборот, скорость минимальна." }] },
+    { eras: [1, 2, 3, 4], question: "Как изменится кинетическая энергия при удвоении скорости?", options: [{ text: "В 2 раза", correct: false, feedback: "Зависит от квадрата скорости." }, { text: "В 4 раза", correct: true, feedback: "Верно! E = mv²/2." }, { text: "Не изменится", correct: false, feedback: "Очевидно зависит." }] },
+    { eras: [1, 2, 3, 4], question: "Сила тяготения при увеличении расстояния в 3 раза?", options: [{ text: "Уменьшится в 3 раза", correct: false, feedback: "Закон содержит квадрат." }, { text: "Уменьшится в 9 раз", correct: true, feedback: "Верно! F ~ 1/r²." }, { text: "Уменьшится в 6 раз", correct: false, feedback: "Нужно возвести в квадрат." }] },
+    { eras: [1, 2, 3, 4], question: "Период математического маятника зависит от:", options: [{ text: "Массы и длины", correct: false, feedback: "Масса не влияет." }, { text: "Длины нити и g", correct: true, feedback: "Верно! T = 2π√(L/g)." }, { text: "Амплитуды", correct: false, feedback: "При малых амплитудах — нет." }] },
+    { eras: [1, 2, 3, 4], question: "Работа при подъёме 5 кг на 2 м (g=10)?", options: [{ text: "10 Дж", correct: false, feedback: "Забыли g." }, { text: "100 Дж", correct: true, feedback: "Верно! A = mgh = 100 Дж." }, { text: "25 Дж", correct: false, feedback: "Нужна формула A = mgh." }] },
+    { eras: [2, 3, 4], question: "Давление газа при изохорном нагревании?", options: [{ text: "Уменьшается", correct: false, feedback: "Кинетическая энергия растёт." }, { text: "Растёт пропорционально температуре", correct: true, feedback: "Верно! Закон Шарля." }, { text: "Не меняется", correct: false, feedback: "Только при постоянной T." }] },
+    { eras: [2, 3, 4], question: "Средняя кинетическая энергия молекул при удвоении T?", options: [{ text: "Не меняется", correct: false, feedback: "T — мера энергии." }, { text: "Увеличивается в 2 раза", correct: true, feedback: "Верно! E = (3/2)kT." }, { text: "В 4 раза", correct: false, feedback: "Зависимость линейная." }] },
+    { eras: [2, 3, 4], question: "Почему невозможен вечный двигатель второго рода?", options: [{ text: "Из-за сохранения энергии", correct: false, feedback: "1-е начало не запрещает." }, { text: "Из-за роста энтропии (2-е начало)", correct: true, feedback: "Верно!" }, { text: "Из-за трения", correct: false, feedback: "Трение можно уменьшить." }] },
+    { eras: [2, 3, 4], question: "Что при адиабатном сжатии газа?", options: [{ text: "Температура понижается", correct: false, feedback: "Работа над газом повышает энергию." }, { text: "Температура повышается, Q = 0", correct: true, feedback: "Верно! ΔU = -A." }, { text: "Давление постоянно", correct: false, feedback: "Меняются все параметры." }] },
+    { eras: [2, 3, 4], question: "Влажность 100% означает:", options: [{ text: "Нет водяного пара", correct: false, feedback: "Наоборот — максимум." }, { text: "Парциальное давление = давлению насыщенного пара", correct: true, feedback: "Верно! Начинается конденсация." }, { text: "Только водяной пар", correct: false, feedback: "Есть ещё азот и кислород." }] },
+    { eras: [2, 3, 4], question: "Броуновское движение — это:", options: [{ text: "Движение молекул в кристалле", correct: false, feedback: "Там колебания." }, { text: "Хаотическое движение частиц из-за ударов молекул", correct: true, feedback: "Верно! Доказательство молекул." }, { text: "Движение электронов", correct: false, feedback: "Это ток." }] },
+    { eras: [2, 3], question: "Закон Джоуля-Ленца: теплота от тока?", options: [{ text: "Q ~ I", correct: false, feedback: "Зависимость сильнее." }, { text: "Q ~ I²", correct: true, feedback: "Верно! Q = I²Rt." }, { text: "Q ~ 1/I", correct: false, feedback: "Неверно." }] },
+    { eras: [2, 3, 4], question: "Сила Кулона при уменьшении расстояния в 2 раза?", options: [{ text: "В 2 раза", correct: false, feedback: "Закон содержит квадрат." }, { text: "В 4 раза", correct: true, feedback: "Верно! F ~ 1/r²." }, { text: "Уменьшится в 4 раза", correct: false, feedback: "При сближении сила растёт." }] },
+    { eras: [2, 3, 4], question: "Ток 2 А, напряжение 12 В. Сопротивление?", options: [{ text: "24 Ом", correct: false, feedback: "Нужно делить." }, { text: "6 Ом", correct: true, feedback: "Верно! R = U/I = 6 Ом." }, { text: "0.17 Ом", correct: false, feedback: "Разделили не туда." }] },
+    { eras: [2, 3, 4], question: "Два резистора по 10 Ом параллельно. R общее?", options: [{ text: "20 Ом", correct: false, feedback: "Это последовательно." }, { text: "5 Ом", correct: true, feedback: "Верно! 1/R = 1/R₁ + 1/R₂." }, { text: "10 Ом", correct: false, feedback: "Меньше наименьшего." }] },
+    { eras: [2, 3, 4], question: "Для индукционного тока нужно:", options: [{ text: "Постоянное магнитное поле", correct: false, feedback: "Недостаточно." }, { text: "Изменить магнитный поток", correct: true, feedback: "Верно! Закон Фарадея." }, { text: "Нагреть контур", correct: false, feedback: "Не создаст ЭДС." }] },
+    { eras: [2, 3, 4], question: "На проводник с током в магнитном поле действует:", options: [{ text: "Сила Кулона", correct: false, feedback: "Между зарядами." }, { text: "Сила Ампера", correct: true, feedback: "Верно! F = BIL·sin(α)." }, { text: "Сила тяжести", correct: false, feedback: "Не связана с током." }] },
+    { eras: [2, 3, 4], question: "Почему небо голубое?", options: [{ text: "Отражает океаны", correct: false, feedback: "Миф." }, { text: "Рэлеевское рассеяние синих волн", correct: true, feedback: "Верно!" }, { text: "Солнце синее", correct: false, feedback: "Спектр близок к белому." }] },
+    { eras: [3, 4], question: "Как увеличить энергию фотоэлектронов?", options: [{ text: "Увеличить яркость", correct: false, feedback: "Увеличит количество, не энергию." }, { text: "Увеличить частоту света", correct: true, feedback: "Верно! E = hν." }, { text: "Увеличить площадь", correct: false, feedback: "Не влияет." }] },
+    { eras: [3, 4], question: "Опыт Резерфорда показал:", options: [{ text: "Атом — однородный шар", correct: false, feedback: "Это модель Томсона." }, { text: "Плотное ядро в центре", correct: true, feedback: "Верно! Планетарная модель." }, { text: "Стационарные орбиты", correct: false, feedback: "Это Бор." }] },
+    { eras: [3, 4], question: "Принцип неопределённости Гейзенберга:", options: [{ text: "Нельзя точно измерить координату и импульс", correct: true, feedback: "Верно! Δx·Δp ≥ ħ/2." }, { text: "Энергия квантуется", correct: false, feedback: "Это Бор." }, { text: "Скорость света абсолютна", correct: false, feedback: "Это СТО." }] },
+    { eras: [3, 4], question: "Расчёт показывает скорость выше света. Ваши действия?", options: [{ text: "Опубликовать сенсацию", correct: false, feedback: "Поспешность погубит репутацию." }, { text: "Перепроверить", correct: true, feedback: "Мудрое решение." }, { text: "Спрятать", correct: false, feedback: "Противоречит этике." }] },
+    { eras: [3, 4], question: "Часы при околосветовой скорости:", options: [{ text: "Идут быстрее", correct: false, feedback: "Наоборот." }, { text: "Идут медленнее", correct: true, feedback: "Верно! Релятивистское замедление." }, { text: "Останавливаются", correct: false, feedback: "Только при c, что невозможно." }] },
+    { eras: [3, 4], question: "Кот Шрёдингера — это:", options: [{ text: "Коты в двух местах", correct: false, feedback: "Упрощение." }, { text: "Критика переноса суперпозиции на макрообъекты", correct: true, feedback: "Верно!" }, { text: "Доказательство неверности КМ", correct: false, feedback: "Указывает на проблемы интерпретации." }] },
+    { eras: [3, 4], question: "Изотопы — это:", options: [{ text: "Одинаковое число протонов, разное нейтронов", correct: true, feedback: "Верно!" }, { text: "Одинаковое нейтронов, разное протонов", correct: false, feedback: "Это изотоны." }, { text: "Ионы", correct: false, feedback: "Ионы — по электронам." }] },
+    { eras: [3, 4], question: "Полное внутреннее отражение:", options: [{ text: "Свет проходит", correct: false, feedback: "Наоборот." }, { text: "Свет отражается при угле больше критического", correct: true, feedback: "Верно! Оптоволокно." }, { text: "Свет поглощается", correct: false, feedback: "Другой процесс." }] },
+    { eras: [3, 4], question: "E = mc² означает:", options: [{ text: "E = m·c", correct: false, feedback: "Не хватает квадрата." }, { text: "Масса и энергия эквивалентны", correct: true, feedback: "Верно! Принцип СТО." }, { text: "Энергия движения", correct: false, feedback: "Полная: E² = (pc)² + (mc²)²." }] },
+    { eras: [4], question: "LIGO регистрирует:", options: [{ text: "Нейтрино", correct: false, feedback: "Это IceCube." }, { text: "Гравитационные волны", correct: true, feedback: "Верно!" }, { text: "Реликтовое излучение", correct: false, feedback: "Это Planck." }] },
+    { eras: [4], question: "Цель БАК:", options: [{ text: "Создание чёрных дыр", correct: false, feedback: "Фантастика." }, { text: "Столкновение частиц при высоких энергиях", correct: true, feedback: "Верно! Бозон Хиггса." }, { text: "Наблюдение галактик", correct: false, feedback: "Телескопы." }] },
+    { eras: [4], question: "Что НЕ в Стандартной модели?", options: [{ text: "Кварки", correct: false, feedback: "Основа модели." }, { text: "Гравитон", correct: true, feedback: "Верно! Гравитация не квантована." }, { text: "Бозон Хиггса", correct: false, feedback: "Часть модели." }] },
+    { eras: [4], question: "Красное смещение — это:", options: [{ text: "Нагрев звезды", correct: false, feedback: "Нагрев — в синюю сторону." }, { text: "Увеличение длины волны из-за удаления", correct: true, feedback: "Верно! Расширение Вселенной." }, { text: "Поглощение пылью", correct: false, feedback: "Другой эффект." }] },
+    { eras: [4], question: "Эффект Мейснера:", options: [{ text: "Вытеснение магнитного поля из сверхпроводника", correct: true, feedback: "Верно!" }, { text: "Излучение света", correct: false, feedback: "Не связано." }, { text: "Рост сопротивления", correct: false, feedback: "Сопротивление падает до нуля." }] },
+    { eras: [1, 2, 3, 4], question: "Результат измерения с погрешностью 1 мм:", options: [{ text: "Просто число 15", correct: false, feedback: "Нужны единицы и погрешность." }, { text: "(150 ± 1) мм", correct: true, feedback: "Верно!" }, { text: "150.0000 мм", correct: false, feedback: "Ложная точность." }] }
+];
+
+const femaleOnlyEvents = [
+    { title: "Отказ в поступлении", ageRange: { min: 16, max: 22 }, text: "Вам отказали в университете: 'Женщинам здесь не место'. У вас есть протекция отца-профессора.", choices: [
+        { text: "Использовать протекцию (+15 🧠, -15 🤝, -10 😊)", effect: { knowledge: 15, relationships: -15, happiness: -10 }, log: "Вы поступили, но стали изгоем." },
+        { text: "Уехать за границу (-25 💰, +15 🧠)", effect: { money: -25, knowledge: 15 }, log: "Вы уехали в Цюрих. Семья отвернулась." },
+        { text: "Самообразование дома (+10 🧠, -20 😊)", effect: { knowledge: 10, happiness: -20 }, log: "Ваш гений никем не признан." }
+    ]},
+    { title: "Харассмент в лаборатории", ageRange: { min: 20, max: 35 }, text: "Заведующий намекает, что диссертация будет защищена только 'при определённых условиях'.", choices: [
+        { text: "Подать жалобу (+10 😊, -25 🤝, -15 💰)", effect: { happiness: 10, relationships: -25, money: -15 }, log: "Его уволили, но вас считают 'ябедой'." },
+        { text: "Найти другого руководителя (-15 🧠, -10 💰)", effect: { knowledge: -15, money: -10 }, log: "Вы потеряли два года, но сохранили достоинство." },
+        { text: "Согласиться (-20 😊, +15 🧠)", effect: { happiness: -20, knowledge: 15 }, log: "Вы получили степень, но ненавидите себя." }
+    ]},
+    { title: "Давление семьи", ageRange: { min: 22, max: 32 }, text: "Мать твердит: 'Пора рожать'. Отец готов оплатить свадьбу с богатым врачом, но вы должны бросить науку.", choices: [
+        { text: "Выйти замуж и бросить науку (+20 🤝, +15 😊, -30 🧠)", effect: { relationships: 20, happiness: 15, knowledge: -30 }, log: "Тетради пылятся на чердаке." },
+        { text: "Отказаться от свадьбы (-20 🤝, +10 🧠, -10 😊)", effect: { relationships: -20, knowledge: 10, happiness: -10 }, log: "Семья отвернулась." },
+        { text: "Компромисс (+5 🤝, +5 🧠, -15 💪)", effect: { relationships: 5, knowledge: 5, health: -15 }, log: "Вы пытаетесь успеть всё." }
+    ]},
+    { title: "Декрет и карьера", ageRange: { min: 23, max: 40 }, text: "Вы родили ребёнка. Коллеги шепчутся: 'Она не вернётся'.", choices: [
+        { text: "Вернуться через месяц (-20 🤝, +10 🧠, -10 😊)", effect: { relationships: -20, knowledge: 10, happiness: -10 }, log: "Позиция сохранена, но ребёнок растёт без вас." },
+        { text: "Год отпуска (-25 🧠, +15 🤝, +10 😊)", effect: { knowledge: -25, relationships: 15, happiness: 10 }, log: "Вас забыли. Тема занята." },
+        { text: "Работать из дома (-20 💪, +5 🧠, +5 🤝)", effect: { health: -20, knowledge: 5, relationships: 5 }, log: "Вы истощены, но не сдались." }
+    ]},
+    { title: "Присвоение авторства", ageRange: { min: 25, max: 55 }, text: "Коллега-мужчина опубликовал вашу идею. Редактор: 'Работа женщины не может быть оригинальной'.", choices: [
+        { text: "Публично разоблачить (+10 🧠, -20 🤝, -15 😊)", effect: { knowledge: 10, relationships: -20, happiness: -15 }, log: "Скандал. Многие считают вас 'истеричкой'." },
+        { text: "Принять соавторство (+5 🧠, -10 😊)", effect: { knowledge: 5, happiness: -10 }, log: "Вас упомянули мелким шрифтом." },
+        { text: "Молча продолжить (+10 🧠, -5 😊)", effect: { knowledge: 10, happiness: -5 }, log: "Ещё одно открытие, которое нельзя игнорировать." }
+    ]},
+    { title: "Нобелевский комитет", ageRange: { min: 40, max: 70 }, text: "Ваше открытие номинировано на Нобеля, но комитет предлагает разделить премию с мужем, не внёсшим вклада.", choices: [
+        { text: "Согласиться (+15 🧠, +10 💰, -20 😊)", effect: { knowledge: 15, money: 10, happiness: -20 }, log: "Вы получили премию, но история запомнит его." },
+        { text: "Отказаться (+10 🧠, +15 😊, -10 💰)", effect: { knowledge: 10, happiness: 15, money: -10 }, log: "Вы потеряли премию, но коллеги знают правду. Как Лиза Мейтнер." },
+        { text: "Потребовать разбирательства (+5 🧠, -15 🤝)", effect: { knowledge: 5, relationships: -15 }, log: "Скандал в академии." }
+    ]}
+];
+
+const randomEvents = [
+    { title: "Эпидемия", ageRange: { min: 15, max: 85 }, text: "Вспышка болезни в городе.", choices: [
+        { text: "Потратить деньги на лекарей (-30 💰, +15 💪)", effect: { money: -30, health: 15 }, log: "Вы выжили благодаря уходу." },
+        { text: "Лечиться доступными средствами (-15 💪, -5 💰)", effect: { health: -15, money: -5 }, log: "Здоровье пошатнулось." },
+        { text: "Игнорировать и работать (-25 💪, +10 🧠)", effect: { health: -25, knowledge: 10 }, log: "Открытие, но едва не умерли." }
+    ]},
+    { title: "Школьная олимпиада", ageRange: { min: 15, max: 20 }, text: "Вам предложили участвовать в олимпиаде по физике.", choices: [
+        { text: "Усердно готовиться (+15 🧠, -10 😊, -5 🤝)", effect: { knowledge: 15, happiness: -10, relationships: -5 }, log: "Вы взяли первое место!" },
+        { text: "Участвовать без подготовки (+5 🧠)", effect: { knowledge: 5 }, log: "Вы получили опыт, но не призовое место." },
+        { text: "Отказаться (+10 😊, +5 🤝)", effect: { happiness: 10, relationships: 5 }, log: "Вы провели время с друзьями." }
+    ]},
+    { title: "Поступление в университет", ageRange: { min: 17, max: 23 }, text: "Пришло время выбирать университет и специальность.", choices: [
+        { text: "Престижный, но далеко от дома (+20 🧠, -15 🤝, -20 💰)", effect: { knowledge: 20, relationships: -15, money: -20 }, log: "Вы получили отличное образование вдали от семьи." },
+        { text: "Местный, скромный (+10 🧠, +5 🤝)", effect: { knowledge: 10, relationships: 5 }, log: "Вы остались рядом с близкими." },
+        { text: "Пойти работать вместо учёбы (+15 💰, -20 🧠)", effect: { money: 15, knowledge: -20 }, log: "Ранний старт карьеры, но без фундамента." }
+    ]},
+    { title: "Первая любовь", ageRange: { min: 16, max: 25 }, text: "Вы встретили человека, который стал очень важен для вас.", choices: [
+        { text: "Посвятить себя отношениям (+20 🤝, +15 😊, -10 🧠)", effect: { relationships: 20, happiness: 15, knowledge: -10 }, log: "Любовь окрыляет, но учёба отходит на второй план." },
+        { text: "Совмещать (+10 🤝, +5 😊, -5 🧠)", effect: { relationships: 10, happiness: 5, knowledge: -5 }, log: "Баланс дался нелегко." },
+        { text: "Выбрать карьеру (-15 🤝, +10 🧠)", effect: { relationships: -15, knowledge: 10 }, log: "Вы расстались. Работа стала отдушиной." }
+    ]},
+    { title: "Академический конфликт", ageRange: { min: 25, max: 65 }, text: "Старший коллега пытается присвоить авторство.", choices: [
+        { text: "Публично разоблачить (+10 🧠, -15 🤝, -10 😊)", effect: { knowledge: 10, relationships: -15, happiness: -10 }, log: "Справедливость восторжествовала, но вы нажили врага." },
+        { text: "Смириться (-10 😊, +5 💰)", effect: { happiness: -10, money: 5 }, log: "Финансы сохранены, но горечь осталась." },
+        { text: "Предложить соавторство (+5 🤝, +5 🧠)", effect: { relationships: 5, knowledge: 5 }, log: "Компромисс." }
+    ]},
+    { title: "Защита диссертации", ageRange: { min: 25, max: 35 }, text: "Пришло время защищать диссертацию. Комиссия строга.", choices: [
+        { text: "Блестяще защитить (+20 🧠, +15 💰, +10 😊)", effect: { knowledge: 20, money: 15, happiness: 10 }, log: "Вас отметили как выдающегося молодого учёного!" },
+        { text: "Защитить с трудом (+10 🧠, -5 😊)", effect: { knowledge: 10, happiness: -5 }, log: "Степень получена, но осадок остался." },
+        { text: "Отложить на год (-10 🧠, -10 😊, -10 💰)", effect: { knowledge: -10, happiness: -10, money: -10 }, log: "Вы потеряли год, но подготовились лучше." }
+    ]},
+    { title: "Первый грант", ageRange: { min: 28, max: 45 }, text: "Вам предложили серьёзный исследовательский грант.", choices: [
+        { text: "Взять и рискнуть всем (+20 🧠, +15 💰, -10 😊)", effect: { knowledge: 20, money: 15, happiness: -10 }, log: "Грант получен! Давление огромное, но возможности безграничны." },
+        { text: "Взять скромный проект (+10 🧠, +5 💰)", effect: { knowledge: 10, money: 5 }, log: "Стабильное финансирование без риска." },
+        { text: "Отказаться (+5 😊, +5 🤝)", effect: { happiness: 5, relationships: 5 }, log: "Вы выбрали спокойствие." }
+    ]},
+    { title: "Рождение ребёнка", ageRange: { min: 25, max: 42 }, text: "У вас родился ребёнок! Это огромное счастье и ответственность.", choices: [
+        { text: "Посвятить себя семье (+20 🤝, +20 😊, -15 🧠, -20 💰)", effect: { relationships: 20, happiness: 20, knowledge: -15, money: -20 }, log: "Вы стали прекрасным родителем. Карьера замедлилась." },
+        { text: "Нанять няню и работать (+10 🧠, +5 🤝, -25 💰)", effect: { knowledge: 10, relationships: 5, money: -25 }, log: "Вы сохранили темп, но ребёнок растёт с няней." },
+        { text: "Совмещать всё (-15 💪, +10 🤝, +10 😊)", effect: { health: -15, relationships: 10, happiness: 10 }, log: "Вы истощены, но счастливы." }
+    ]},
+    { title: "Семейный кризис", ageRange: { min: 30, max: 55 }, text: "Партнёр устал от ваших задержек в лаборатории.", choices: [
+        { text: "Провести время с семьёй (-20 🧠, +25 🤝, +15 😊)", effect: { knowledge: -20, relationships: 25, happiness: 15 }, log: "Карьера замедлилась, но семья спасена." },
+        { text: "Совмещать, но выгореть (-15 💪, -10 😊, +5 🤝)", effect: { health: -15, happiness: -10, relationships: 5 }, log: "Вы надорвались." },
+        { text: "Выбрать науку (-25 🤝, +10 🧠)", effect: { relationships: -25, knowledge: 10 }, log: "Прорыв, но одиночество." }
+    ]},
+    { title: "Предательство друга", ageRange: { min: 25, max: 60 }, text: "Коллега слил ваши данные конкурентам.", choices: [
+        { text: "Подать в суд (-20 🤝, +10 💰, -10 😊)", effect: { relationships: -20, money: 10, happiness: -10 }, log: "Вы выиграли, но потеряли друга." },
+        { text: "Простить (-15 😊, +5 🤝)", effect: { happiness: -15, relationships: 5 }, log: "Доверие утрачено." },
+        { text: "Тихо отомстить (-10 🧠, -10 🤝)", effect: { knowledge: -10, relationships: -10 }, log: "Вы оба потеряли." }
+    ]},
+    { title: "Этическая дилемма", ageRange: { min: 30, max: 65 }, text: "Военные просят адаптировать открытие для оружия.", choices: [
+        { text: "Согласиться (+30 💰, -20 😊, -10 🤝)", effect: { money: 30, happiness: -20, relationships: -10 }, log: "Вы богаты, но коллеги отвернулись." },
+        { text: "Отказаться (-15 💰, +15 😊)", effect: { money: -15, happiness: 15 }, log: "Грант потерян, но совесть чиста." },
+        { text: "Саботировать (-10 🧠, -10 💰)", effect: { knowledge: -10, money: -10 }, log: "Вы рисковали карьерой." }
+    ]},
+    { title: "Талантливый студент", ageRange: { min: 35, max: 70 }, text: "К вам приходит молодой гений.", choices: [
+        { text: "Взять в ученики (+15 🧠, +10 🤝)", effect: { knowledge: 15, relationships: 10 }, log: "Ваш студент сделал блестящую карьеру." },
+        { text: "Отказать", effect: {}, log: "Вы упустили возможность." }
+    ]},
+    { title: "Предложение из-за границы", ageRange: { min: 30, max: 55 }, text: "Престижная позиция в другой стране.", choices: [
+        { text: "Уехать одному (+20 🧠, +15 💰, -25 🤝)", effect: { knowledge: 20, money: 15, relationships: -25 }, log: "Карьера, но семья распалась." },
+        { text: "Взять семью (-10 💰, +5 🤝, +10 🧠)", effect: { money: -10, relationships: 5, knowledge: 10 }, log: "Семья адаптировалась." },
+        { text: "Остаться (-15 🧠, +15 🤝)", effect: { knowledge: -15, relationships: 15 }, log: "Вы выбрали любовь." }
+    ]},
+    { title: "Провал эксперимента", ageRange: { min: 25, max: 60 }, text: "Годы работы оказались ошибкой.", choices: [
+        { text: "Честно опубликовать (+10 🧠, +10 😊, -5 💰)", effect: { knowledge: 10, happiness: 10, money: -5 }, log: "Коллеги оценили честность." },
+        { text: "Скрыть (-15 😊, +5 💰)", effect: { happiness: -15, money: 5 }, log: "Обман раскрылся. Скандал." },
+        { text: "Начать заново (-10 💰, +15 🧠)", effect: { money: -10, knowledge: 15 }, log: "Новый путь." }
+    ]},
+    { title: "Потеря близкого человека", ageRange: { min: 40, max: 80 }, text: "Ушёл из жизни кто-то очень дорогой вам.", choices: [
+        { text: "Уйти в работу (-20 🤝, +10 🧠, -15 😊)", effect: { relationships: -20, knowledge: 10, happiness: -15 }, log: "Работа стала отдушиной, но боль не уходит." },
+        { text: "Оплатить достойные похороны (-30 💰, +5 🤝)", effect: { money: -30, relationships: 5 }, log: "Вы провели близкого в последний путь." },
+        { text: "Найти поддержку у друзей (+15 🤝, +5 😊)", effect: { relationships: 15, happiness: 5 }, log: "Друзья помогли пережить горе." }
+    ]},
+    { title: "Серьёзная болезнь", ageRange: { min: 45, max: 85 }, text: "Врачи обнаружили серьёзное заболевание.", choices: [
+        { text: "Дорогое лечение (-40 💰, +20 💪, -10 😊)", effect: { money: -40, health: 20, happiness: -10 }, log: "Вы прошли через тяжёлое лечение." },
+        { text: "Щадящая терапия (-15 💰, +10 💪)", effect: { money: -15, health: 10 }, log: "Болезнь отступила, но не полностью." },
+        { text: "Игнорировать и работать (-25 💪, +10 🧠)", effect: { health: -25, knowledge: 10 }, log: "Вы продолжили работу, но здоровье ухудшилось." }
+    ]},
+    { title: "Внук пошёл по вашим стопам", ageRange: { min: 55, max: 80 }, text: "Ваш внук проявляет интерес к физике и просит рассказать о вашей работе.", choices: [
+        { text: "Стать его наставником (+15 🧠, +20 🤝, +15 😊)", effect: { knowledge: 15, relationships: 20, happiness: 15 }, log: "Вы передаёте знания следующему поколению." },
+        { text: "Предостеречь от трудной судьбы учёного (-5 🤝, +5 😊)", effect: { relationships: -5, happiness: 5 }, log: "Вы рассказали о тяготах науки." },
+        { text: "Подарить свои книги (+10 🤝, +10 😊)", effect: { relationships: 10, happiness: 10 }, log: "Внук с интересом листает ваши старые записи." }
+    ]},
+    { title: "Вынужденный уход на пенсию", ageRange: { min: 60, max: 75 }, text: "Ваш университет ввёл обязательный пенсионный возраст. Вас просят освободить лабораторию.", choices: [
+        { text: "Бороться до конца (-15 💪, -10 🤝, +5 🧠)", effect: { health: -15, relationships: -10, knowledge: 5 }, log: "Вы задержались, но потеряли много сил." },
+        { text: "Уйти достойно, передать дела (+10 🤝, +10 😊)", effect: { relationships: 10, happiness: 10 }, log: "Коллеги провожали вас с уважением." },
+        { text: "Открыть частную лабораторию (-30 💰, +15 🧠)", effect: { money: -30, knowledge: 15 }, log: "Вы продолжили работу на своих условиях." }
+    ]},
+    { title: "Последнее открытие", ageRange: { min: 60, max: 82 }, text: "На склоне лет вы неожиданно сделали важное наблюдение.", choices: [
+        { text: "Опубликовать, несмотря на возраст (+20 🧠, +15 😊)", effect: { knowledge: 20, happiness: 15 }, log: "Ваше последнее открытие вошло в учебники!" },
+        { text: "Передать молодому коллеге (+10 🤝, +10 🧠)", effect: { relationships: 10, knowledge: 10 }, log: "Коллега опубликовал работу с благодарностью вам." },
+        { text: "Оставить в столе (-5 😊)", effect: { happiness: -5 }, log: "Вы побоялись критики. Работа так и не увидела свет." }
+    ]}
+];
+
+const milestoneEvents = [
+    { age: 15, title: "Юношеский выбор", text: "Вам 15 лет. Учитель физики замечает ваш талант.", choices: [
+        { text: "Углубиться в физику (+15 🧠, -10 🤝)", effect: { knowledge: 15, relationships: -10 }, log: "Вы стали лучшим учеником, но одноклассники считают вас занудой." },
+        { text: "Искать баланс (+5 🧠, +5 🤝)", effect: { knowledge: 5, relationships: 5 }, log: "Вы сохранили друзей и неплохие оценки." },
+        { text: "Забить на учёбу (-10 🧠, +15 😊)", effect: { knowledge: -10, happiness: 15 }, log: "Фундамент знаний шаткий." }
+    ]},
+    { age: 30, title: "Научное распутье", text: "Вам 30 лет. Выбор направления на десятилетие.", choices: [
+        { text: "Фундаментальная наука (+20 🧠, -15 💰, -10 😊)", effect: { knowledge: 20, money: -15, happiness: -10 }, log: "Вы ушли в теоретические дебри." },
+        { text: "Прикладные исследования (+15 💰, +10 🧠)", effect: { money: 15, knowledge: 10 }, log: "Ваши разработки приносят доход." },
+        { text: "Преподавание (+15 🤝, +10 😊, +5 🧠)", effect: { relationships: 15, happiness: 10, knowledge: 5 }, log: "Вы стали любимым лектором." }
+    ]},
+    { age: 50, title: "Кризис среднего возраста", text: "Вам 50 лет. Рутина давит, молодые коллеги наступают.", choices: [
+        { text: "Творческий отпуск (-20 💰, +20 😊, +10 💪)", effect: { money: -20, happiness: 20, health: 10 }, log: "Смена обстановки вернула вкус к жизни." },
+        { text: "Усилить давление (-15 🤝, -10 💪, +15 🧠)", effect: { relationships: -15, health: -10, knowledge: 15 }, log: "Прорыв, но ассистенты увольняются." },
+        { text: "Смириться (+5 😊, -5 🧠)", effect: { happiness: 5, knowledge: -5 }, log: "Активность сошла на нет." }
+    ]},
+    { age: 70, title: "Подведение итогов", text: "Вам 70 лет. Время подумать о наследии.", choices: [
+        { text: "Написать мемуары (+20 🤝, +15 🧠)", effect: { relationships: 20, knowledge: 15 }, log: "Ваши мемуары стали настольной книгой." },
+        { text: "Бороться за признание (-10 💪, +10 🧠)", effect: { health: -10, knowledge: 10 }, log: "Вы тратите последние силы." },
+        { text: "Наслаждаться покоем (+20 😊, +10 💪)", effect: { happiness: 20, health: 10 }, log: "Вы нашли покой в кругу близких." }
+    ]}
+];
+
+let state = { age: 15, eraIndex: 0, gender: 'male', role: "", health: 80, happiness: 70, knowledge: 30, relationships: 60, money: 40, isAlive: true, answeredTaskIndices: [], lastFocusAge: 5 };
+
+function clamp(value, min, max) { return Math.min(Math.max(value, min), max); }
+function getGenderModifier() { return genderDifficulty[state.eraIndex]?.[state.gender] || 1.0; }
+
+// === НОВАЯ ФУНКЦИЯ: Перемешивание массива (алгоритм Фишера-Йетса) ===
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
+function addLog(text, type = "neutral") {
+    const logArea = document.getElementById('log-area');
+    const entry = document.createElement('div');
+    entry.className = 'log-entry';
+    if (type === 'good') entry.classList.add('log-good');
+    if (type === 'bad') entry.classList.add('log-bad');
+    if (type === 'focus') entry.classList.add('log-focus');
+    if (type === 'gender') entry.classList.add('log-gender');
+    entry.innerHTML = `<span class="log-age">[${state.age} лет]</span> ${text}`;
+    logArea.insertBefore(entry, logArea.firstChild);
+}
+
+function updateStatsDisplay() {
+    document.getElementById('stat-age').textContent = state.age;
+    document.getElementById('stat-health').textContent = clamp(state.health, 0, 100);
+    document.getElementById('stat-happiness').textContent = clamp(state.happiness, 0, 100);
+    document.getElementById('stat-knowledge').textContent = clamp(state.knowledge, 0, 100);
+    document.getElementById('stat-relationships').textContent = clamp(state.relationships, 0, 100);
+    document.getElementById('stat-money').textContent = state.money;
+    document.getElementById('stat-health').style.color = state.health < 30 ? 'var(--danger)' : '#fff';
+    document.getElementById('stat-happiness').style.color = state.happiness < 30 ? 'var(--danger)' : '#fff';
+}
+
+function applyEffect(effect) {
+    if (!effect) return;
+    if (state.gender === 'female') {
+        const mod = getGenderModifier();
+        if (effect.health && effect.health < 0) effect.health = Math.floor(effect.health * 1.3);
+        if (effect.money && effect.money < 0) effect.money = Math.floor(effect.money * 1.2);
+        if (effect.knowledge && effect.knowledge > 0) effect.knowledge = Math.floor(effect.knowledge * mod);
+        if (effect.relationships && effect.relationships < 0) effect.relationships = Math.floor(effect.relationships * 1.3);
+    }
+    if (effect.health !== undefined) state.health = clamp(state.health + effect.health, 0, 100);
+    if (effect.happiness !== undefined) state.happiness = clamp(state.happiness + effect.happiness, 0, 100);
+    if (effect.knowledge !== undefined) state.knowledge = clamp(state.knowledge + effect.knowledge, 0, 100);
+    if (effect.relationships !== undefined) state.relationships = clamp(state.relationships + effect.relationships, 0, 100);
+    if (effect.money !== undefined) state.money += effect.money;
+    updateStatsDisplay();
+}
+
+function checkDeath() {
+    if (state.health <= 0) { endGame("Вы умерли от болезней и истощения."); return true; }
+    if (state.age >= 85 && Math.random() < 0.4) { endGame("Вы мирно скончались в глубокой старости."); return true; }
+    if (state.money < -100) { endGame("Вы умерли в нищете."); return true; }
+    if (state.happiness <= 0) { endGame("Вы потеряли волю к жизни."); return true; }
+    return false;
+}
+
+function endGame(reason) {
+    state.isAlive = false;
+    document.getElementById('game-area').style.display = 'none';
+    document.getElementById('game-over-area').style.display = 'block';
+    document.getElementById('end-reason').textContent = reason;
+    let summary = `Вы прожили ${state.age} лет. `;
+    const genderText = state.gender === 'female' ? 'Женщиной в науке было непросто. ' : '';
+    if (state.knowledge > 85) summary += `${genderText}Ваше имя вписано в историю физики.`;
+    else if (state.knowledge > 70) summary += "Вы были уважаемым учёным.";
+    else summary += "Ваш вклад в науку остался скромным.";
+    if (state.relationships > 80) summary += " Вас окружали любящие люди.";
+    else if (state.relationships < 30) summary += " Вы пожертвовали личным счастьем.";
+    document.getElementById('end-summary').textContent = summary;
+}
+
+function proceedToNextTurn() {
+    if (!state.isAlive) return;
+    if (state.age >= state.lastFocusAge + 10 && state.age < 80) {
+        state.lastFocusAge += 10;
+        showFocusSelection();
+    } else {
+        setTimeout(() => generateTurn(), 1000);
+    }
+}
+
+function showFocusSelection() {
+    document.getElementById('event-title').textContent = `🎯 Десятилетний рубеж: ${state.age} лет`;
+    document.getElementById('event-text').textContent = "Пора определить ваши главные приоритеты.";
+    const choicesArea = document.getElementById('choices-area');
+    choicesArea.innerHTML = '';
+    const focusDiv = document.createElement('div');
+    focusDiv.className = 'focus-choices';
+    const focusOptions = [
+        { text: '🔬 Наука', desc: '(+🧠, -😊)', effect: { knowledge: 5, happiness: -2 } },
+        { text: '💰 Карьера', desc: '(+💰, -🤝)', effect: { money: 8, relationships: -3 } },
+        { text: '❤️ Семья', desc: '(+🤝, +😊)', effect: { relationships: 5, happiness: 3, knowledge: -2 } },
+        { text: '🏥 Здоровье', desc: '(+💪, -💰)', effect: { health: 5, money: -5 } }
+    ];
+    focusOptions.forEach(option => {
+        const btn = document.createElement('button');
+        btn.className = 'focus-btn';
+        btn.innerHTML = `<strong>${option.text}</strong><small>${option.desc}</small>`;
+        btn.onclick = () => {
+            applyEffect(option.effect);
+            addLog(`Вы сфокусировались на: ${option.text}.`, "focus");
+            setTimeout(() => generateTurn(), 800);
+        };
+        focusDiv.appendChild(btn);
+    });
+    choicesArea.appendChild(focusDiv);
+    updateStatsDisplay();
+}
+
+function getEventByAge(eventsPool) {
+    const ageAppropriate = eventsPool.filter(e => e.ageRange && state.age >= e.ageRange.min && state.age <= e.ageRange.max);
+    if (ageAppropriate.length > 0) return ageAppropriate[Math.floor(Math.random() * ageAppropriate.length)];
+    return null;
+}
+
+function generateTurn() {
+    if (!state.isAlive) return;
+
+    const yearsPassed = Math.floor(Math.random() * 3) + 1;
+    state.age += yearsPassed;
+    state.health -= Math.floor(Math.random() * 3);
+    state.money -= Math.floor(Math.random() * 4);
+    
+    if (checkDeath()) return;
+
+    const feedbackArea = document.getElementById('feedback-area');
+    feedbackArea.style.display = 'none';
+    feedbackArea.className = 'feedback';
+
+    const milestone = milestoneEvents.find(m => m.age === state.age);
+    if (milestone) {
+        document.getElementById('event-title').textContent = `🌟 Веха: ${milestone.title} (${state.age} лет)`;
+        document.getElementById('event-text').textContent = milestone.text;
+        const choicesArea = document.getElementById('choices-area');
+        choicesArea.innerHTML = '';
+        milestone.choices.forEach(choice => {
+            const btn = document.createElement('button');
+            btn.className = 'choice-btn';
+            btn.textContent = choice.text;
+            btn.onclick = () => {
+                applyEffect(choice.effect);
+                addLog(choice.log, choice.effect.health < 0 || choice.effect.happiness < 0 ? "bad" : "good");
+                proceedToNextTurn();
+            };
+            choicesArea.appendChild(btn);
+        });
+        updateStatsDisplay();
+        return;
+    }
+
+    const isTask = Math.random() < 0.5;
+    
+    if (isTask) {
+        const validIndices = tasks.map((t, i) => t.eras.includes(state.eraIndex) ? i : -1).filter(i => i !== -1);
+        const unseenIndices = validIndices.filter(i => !state.answeredTaskIndices.includes(i));
+        let taskIndex, isRepeat = false;
+        if (unseenIndices.length > 0) {
+            taskIndex = unseenIndices[Math.floor(Math.random() * unseenIndices.length)];
+        } else {
+            taskIndex = validIndices[Math.floor(Math.random() * validIndices.length)];
+            isRepeat = true;
+        }
+        if (!state.answeredTaskIndices.includes(taskIndex)) state.answeredTaskIndices.push(taskIndex);
+        const task = tasks[taskIndex];
+
+        // === ПЕРЕМЕШИВАЕМ ВАРИАНТЫ ОТВЕТОВ ===
+        const shuffledOptions = shuffleArray([...task.options]);
+
+        document.getElementById('event-title').textContent = isRepeat ? `📚 Повторение (${state.age} лет)` : `📚 Научная задача (${state.age} лет)`;
+        document.getElementById('event-text').textContent = task.question;
+        const choicesArea = document.getElementById('choices-area');
+        choicesArea.innerHTML = '';
+        
+        shuffledOptions.forEach((opt) => {
+            const btn = document.createElement('button');
+            btn.className = 'choice-btn';
+            btn.textContent = opt.text;
+            btn.onclick = () => {
+                Array.from(choicesArea.children).forEach(b => b.disabled = true);
+                feedbackArea.textContent = opt.feedback;
+                feedbackArea.style.display = 'block';
+                if (opt.correct) {
+                    feedbackArea.classList.add('correct');
+                    applyEffect({ knowledge: 15, happiness: 5, money: 10 });
+                    addLog(isRepeat ? "Вы освежили знания." : "Вы блестяще решили задачу!", "good");
+                } else {
+                    feedbackArea.classList.add('incorrect');
+                    applyEffect({ happiness: -5, knowledge: 5 });
+                    addLog("Вы допустили ошибку.", "bad");
+                }
+                proceedToNextTurn();
+            };
+            choicesArea.appendChild(btn);
+        });
+    } else {
+        let event = null;
+        let isFemaleEvent = false;
+        if (state.gender === 'female' && Math.random() < 0.35) {
+            event = getEventByAge(femaleOnlyEvents);
+            if (event) isFemaleEvent = true;
+        }
+        if (!event) event = getEventByAge(randomEvents);
+        if (!event) {
+            event = randomEvents[Math.floor(Math.random() * randomEvents.length)];
+            addLog(`⚡ Нейтральное событие: ${event.title}`, "neutral");
+        } else if (isFemaleEvent) {
+            addLog(`⚡ Особое событие: ${event.title}`, "gender");
+        }
+
+        document.getElementById('event-title').textContent = `⚡ ${event.title} (${state.age} лет)`;
+        document.getElementById('event-text').textContent = event.text;
+        const choicesArea = document.getElementById('choices-area');
+        choicesArea.innerHTML = '';
+        event.choices.forEach(choice => {
+            const btn = document.createElement('button');
+            btn.className = 'choice-btn';
+            btn.textContent = choice.text;
+            btn.onclick = () => {
+                applyEffect(choice.effect);
+                addLog(choice.log, choice.effect.health < 0 || choice.effect.happiness < 0 || choice.effect.money < -15 ? "bad" : "good");
+                proceedToNextTurn();
+            };
+            choicesArea.appendChild(btn);
+        });
+    }
+    updateStatsDisplay();
+}
+
+function initGame() {
+    state = { age: 15, eraIndex: Math.floor(Math.random() * eras.length), gender: Math.random() < 0.5 ? 'male' : 'female', role: "", health: 80 + Math.floor(Math.random() * 20), happiness: 60 + Math.floor(Math.random() * 20), knowledge: 20 + Math.floor(Math.random() * 20), relationships: 50 + Math.floor(Math.random() * 30), money: 30 + Math.floor(Math.random() * 30), isAlive: true, answeredTaskIndices: [], lastFocusAge: 5 };
+    const rolesPool = state.gender === 'female' ? rolesFemale : rolesMale;
+    state.role = rolesPool[Math.floor(Math.random() * rolesPool.length)];
+    document.getElementById('game-area').style.display = 'block';
+    document.getElementById('game-over-area').style.display = 'none';
+    document.getElementById('log-area').innerHTML = '';
+    document.getElementById('era-display').textContent = `Эпоха: ${eras[state.eraIndex]}`;
+    document.getElementById('role-display').textContent = `Происхождение: ${state.role}`;
+    const genderDisplay = document.getElementById('gender-display');
+    genderDisplay.innerHTML = state.gender === 'female' ? '<span class="gender-badge gender-female">♀ Женщина</span>' : '<span class="gender-badge gender-male">♂ Мужчина</span>';
+    addLog(`Вы родились. Эпоха: ${eras[state.eraIndex]}.`, "good");
+    addLog(`Происхождение: ${state.role}.`, "neutral");
+    if (state.gender === 'female') {
+        const mod = getGenderModifier();
+        const difficultyText = mod < 0.7 ? 'крайне сложно' : mod < 0.9 ? 'нелегко' : 'проще';
+        addLog(`Быть женщиной в науке этой эпохи — ${difficultyText}. (×${mod.toFixed(2)})`, "gender");
+    }
+    updateStatsDisplay();
+    setTimeout(() => showFocusSelection(), 500);
+}
+
+window.onload = initGame;
+</script>
+</body>
+</html>
